@@ -1,0 +1,27 @@
+{
+  "name": "ey-restore",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/007lva/ey-restore.git"
+  },
+  "keywords": [
+    "engineyard"
+  ],
+  "author": "007lva",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/007lva/ey-restore/issues"
+  },
+  "homepage": "https://github.com/007lva/ey-restore#readme",
+  "dependencies": {
+    "cheerio": "^0.19.0",
+    "progress": "^1.1.8",
+    "request": "^2.61.0"
+  }
+}
