@@ -5,10 +5,13 @@ const cheerio = require('cheerio')
 const fs = require('fs')
 const ProgressBar = require('progress')
 const config = require('./config')
+const exec = require('child_process').exec
 
-const req = request.defaults({ forever: true, jar: true })
 let envs = {}, progressBar
+const dbName = config['postgres']['db']
 const ENV_APP_NAME = config['env']
+const fullPath = __dirname + ENV_APP_NAME + '.dump'
+const req = request.defaults({ forever: true, jar: true })
 
 function doRequest(options) {
   return new Promise(
@@ -39,9 +42,43 @@ function pipeRequest(url) {
       .on('data', function(chunk) {
         if (progressBar) progressBar.tick(chunk.length)
       })
-      .pipe(fs.createWriteStream(ENV_APP_NAME + '.dump'))
+      .on('end', function() {
+      	console.log('termino')
+        runCommand('psql -l -H')
+        .then(function(result) {
+          console.log('asd: ' + result)
+          const $ = cheerio.load(result)
+          let databases = []
+          $('td:nth-child(1)').each(function(index, elem) {
+            databases.push($(elem).text())
+          })
+          console.log('Dbs: ' + databases)
+          console.log('Existe: ' + (dbName in databases))
+          runCommand('createdb -T template0 ' + config.postgres.db)
+        })
+      })
+      .pipe(fs.createWriteStream(fullPath))
     }
   )
+}
+
+function runCommand(command) {
+  return new Promise(
+    function(resolve, reject) {
+      exec(command, function(err, stdout, stderr) {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(stdout)
+        }
+      })
+    }
+  )
+}
+
+function printResult(result) {
+  console.log(result.stderr)
+  console.log(result.stdout)
 }
 
 doRequest({ uri: 'https://login.engineyard.com/login' })
@@ -92,7 +129,7 @@ doRequest({ uri: 'https://login.engineyard.com/login' })
   if (err) {
     console.log('Error: ' + JSON.stringify(err))
   } else {
-    console.log('Succes!')
+    console.log('Success!')
   }
 })
 
